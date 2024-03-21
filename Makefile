@@ -1,8 +1,8 @@
 IMAGE_VERSION := $(shell python scripts/retrieve_version.py)
 SHORTENED_LATEST_VERSION := $(shell echo $(IMAGE_VERSION) | awk -F. '{print $$1"."$$2}')
-KOGITO_APPS_TARGET_BRANCH ?= main
-KOGITO_APPS_TARGET_URI ?= https://github.com/apache/incubator-kie-kogito-apps.git
-BUILD_ENGINE ?= docker
+KOGITO_APPS_TARGET_BRANCH ?= orchestrator-dataindex
+KOGITO_APPS_TARGET_URI ?= https://github.com/gabriel-farache/incubator-kie-kogito-apps
+BUILD_ENGINE ?= podman
 BUILD_ENGINE_TLS_OPTIONS ?= ''
 .DEFAULT_GOAL := build
 CEKIT_CMD := cekit -v ${cekit_option}
@@ -46,13 +46,13 @@ endif
 # tag with shortened version
 ifneq ($(ignore_tag),true)
     ifneq ($(findstring rc,$(IMAGE_VERSION)),rc)
-	    ${BUILD_ENGINE} tag quay.io/kiegroup/${image_name}:${IMAGE_VERSION} quay.io/kiegroup/${image_name}:${SHORTENED_LATEST_VERSION}
+	    ${BUILD_ENGINE} tag quay.io/orchestrator/${image_name}:${IMAGE_VERSION} quay.io/orchestrator/${image_name}:${SHORTENED_LATEST_VERSION}
     endif
 endif
 # if ignore_test is set to true, ignore the tests
 ifneq ($(ignore_test),true)
 	${CEKIT_CMD} --descriptor ${image_name}-image.yaml test behave ${test_options}
-	tests/shell/run.sh ${image_name} "quay.io/kiegroup/${image_name}:${SHORTENED_LATEST_VERSION}"
+	tests/shell/run.sh ${image_name} "quay.io/orchestrator/${image_name}:${SHORTENED_LATEST_VERSION}"
 endif
 
 
@@ -66,11 +66,11 @@ _push:
 .PHONY: push-image
 image_name=
 push-image:
-	${BUILD_ENGINE} ${BUILD_ENGINE_TLS_OPTIONS} push quay.io/kiegroup/${image_name}:${IMAGE_VERSION}
-	${BUILD_ENGINE} ${BUILD_ENGINE_TLS_OPTIONS} push quay.io/kiegroup/${image_name}:latest
+	${BUILD_ENGINE} ${BUILD_ENGINE_TLS_OPTIONS} push quay.io/orchestrator/${image_name}:${IMAGE_VERSION}
+	${BUILD_ENGINE} ${BUILD_ENGINE_TLS_OPTIONS} push quay.io/orchestrator/${image_name}:latest
 ifneq ($(findstring rc,$(IMAGE_VERSION)), rc)
 	@echo "${SHORTENED_LATEST_VERSION} will be pushed"
-	${BUILD_ENGINE} ${BUILD_ENGINE_TLS_OPTIONS} push quay.io/kiegroup/${image_name}:${SHORTENED_LATEST_VERSION}
+	${BUILD_ENGINE} ${BUILD_ENGINE_TLS_OPTIONS} push quay.io/orchestrator/${image_name}:${SHORTENED_LATEST_VERSION}
 endif
 
 
